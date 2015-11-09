@@ -7,8 +7,8 @@ class Theme extends Tree\Item {
 
     public function __construct($themeName, $assetPath = null, $viewsPath = null){
         $this->name = $themeName;
-        $this->assetPath = $assetPath === null ? $themeName : $assetPath;
-        $this->viewsPath = $viewsPath === null ? $themeName : $viewsPath;
+        $this->assetPath = $assetPath === null ? $this->getDefaultAssetsPath() : $this->getThemePath() . '/' . $assetPath;
+        $this->viewsPath = $viewsPath === null ? $this->getDefaultViewsPath() : $this->getThemePath() . '/' . $viewsPath;
     }
 
     public function getParent(){
@@ -18,10 +18,25 @@ class Theme extends Tree\Item {
             return null;
     }
 
+    public function getThemePath() {
+        $themesPath = \Config::get('themes.themesPath');
+        $themePath = $themesPath . '/' . $this->name;
+        return $themePath;
+    }
+
+    public function getDefaultViewsPath() {
+        $viewsPath = $this->getThemePath() . '/views';
+        return $viewsPath;
+    }
+
+    public function getDefaultAssetsPath() {
+        $assetsPath = $this->getThemePath() . '/assets';
+        return $assetsPath;
+    }
 
     /**
      * Attach theme paths to a local Url. The Url must be a resource located on the asset path
-     * of the current theme or it's parents. 
+     * of the current theme or it's parents.
      *
      * @param  string $url
      * @return string
@@ -44,7 +59,7 @@ class Theme extends Tree\Item {
         // If not found then lookup in parent's theme asset path
         if ($this->getParent())
             return $this->getParent()->url($url);
-        
+
         // Asset not found at all. Error handling
         $action = \Config::get('themes.asset_not_found','LOG_ERROR');
 
@@ -56,7 +71,7 @@ class Theme extends Tree\Item {
 
     /**
      * Return the configuration value of $key for the current theme. Configuration values
-     * are stored per theme in themes.php config file. 
+     * are stored per theme in themes.php config file.
      *
      * @param  string $key
      * @return mixed

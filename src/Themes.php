@@ -4,16 +4,16 @@ use Illuminate\Support\Facades\Config;
 
 class Themes{
 
-	public  $activeTheme = null;
+    public  $activeTheme = null;
 
-	public  $root = null;
+    public  $root = null;
 
     private  $defaultViewsPath;
 
     public function __construct(){
-		$this->defaultViewsPath = Config::get('view.paths');
-		
-		$this->root = new Theme('root','','');
+        $this->defaultViewsPath = Config::get('view.paths');
+
+        $this->root = new Theme('root','','');
     }
 
     /**
@@ -23,16 +23,16 @@ class Themes{
      * @param   string $parentName
      * @return  \igaster\laravelTheme\Theme
      */
-	public function add(Theme $theme, $parentName = ''){
+    public function add(Theme $theme, $parentName = ''){
 
-		if ($parentName)
-			$parentTheme = $this->find($parentName);
-		else
-			$parentTheme = $this->root;
+        if ($parentName)
+            $parentTheme = $this->find($parentName);
+        else
+            $parentTheme = $this->root;
 
-		$theme->addParent($parentTheme);
-		return $theme;
-	}
+        $theme->addParent($parentTheme);
+        return $theme;
+    }
 
     /**
      * Find a Theme (by name)
@@ -56,7 +56,7 @@ class Themes{
      * @return  bool
      */
     public function exists($themeName){
-    	return ($this->find($themeName)!==false);
+        return ($this->find($themeName)!==false);
     }
 
     /**
@@ -65,44 +65,43 @@ class Themes{
      * @param   string $themeName
      * @return  void
      */
-	public function set($themeName){
-		if (!Config::get('themes.enabled', true))
-			return;
-		
-		if (!$theme = $this->find($themeName))
-			$theme = $this->add(new Theme($themeName));
+    public function set($themeName){
+        if (!Config::get('themes.enabled', true))
+            return;
 
-		$this->activeTheme = $theme;
+        if (!$theme = $this->find($themeName))
+            $theme = $this->add(new Theme($themeName));
 
-		// Build Paths array. 
-		// All paths are relative first entry in 'paths' array (set in views.php config file)
-		$paths = [];
-		do {
-			$path = $this->defaultViewsPath[0];
-			$path .= empty($theme->viewsPath) ? '' : '/'.$theme->viewsPath;
-			if(!in_array($path, $paths))
-				$paths[] = $path;
-		} while ($theme = $theme->getParent());
+        $this->activeTheme = $theme;
 
-		// fall-back to default paths (set in views.php config file)
-		foreach ($this->defaultViewsPath as $path)
-			if(!in_array($path, $paths))
-				$paths[] = $path;
+        // Build Paths array.
+        // All paths are relative first entry in 'paths' array (set in views.php config file)
+        $paths = [];
+        do {
+            $path = $theme->viewsPath;
+            if(!in_array($path, $paths))
+                $paths[] = $path;
+        } while ($theme = $theme->getParent());
 
-		Config::set('view.paths', $paths);
-	
-		$themeViewFinder = app('view.finder');
-		$themeViewFinder->setPaths($paths);
-	}
+        // fall-back to default paths (set in views.php config file)
+        foreach ($this->defaultViewsPath as $path)
+            if(!in_array($path, $paths))
+                $paths[] = $path;
+
+        Config::set('view.paths', $paths);
+
+        $themeViewFinder = app('view.finder');
+        $themeViewFinder->setPaths($paths);
+    }
 
     /**
      * Get  active's Theme Name
      *
      * @return  string
      */
-	public function get(){
-		return $this->activeTheme ? $this->activeTheme->name : '';
-	}
+    public function get(){
+        return $this->activeTheme ? $this->activeTheme->name : '';
+    }
 
     /**
      * Return current theme's configuration option for $key
@@ -110,19 +109,19 @@ class Themes{
      * @param   string $key
      * @return  mixed
      */
-	public function config($key){
-		return $this->activeTheme->config($key);
-	}
+    public function config($key){
+        return $this->activeTheme->config($key);
+    }
 
     /**
      * Attach current theme's paths to a local Url. The Url must be a resource located on the asset path
-     * of the current theme or it's parents. 
+     * of the current theme or it's parents.
      *
      * @param  string $url
      * @return string
      */
-	public function url($url){
-		if (Config::get('themes.enabled', true)){
+    public function url($url){
+        if (Config::get('themes.enabled', true)){
 
             // Check for valid {xxx} keys and replace them with the Theme's configuration value (in themes.php)
             preg_match_all('/\{(.*?)\}/', $url, $matches);
@@ -130,13 +129,13 @@ class Themes{
                 if(($value=$this->config($param)) !== null)
                     $url = str_replace('{'.$param.'}', $value, $url);
 
-			return $this->activeTheme->url($url);
+            return $this->activeTheme->url($url);
         }
-		else
-			return $url;
-	}
+        else
+            return $url;
+    }
 
-	//---------------- Helper Functions (for Blade files) -------------------------
+    //---------------- Helper Functions (for Blade files) -------------------------
 
     /**
      * Return css link for $href
@@ -144,9 +143,9 @@ class Themes{
      * @param  string $href
      * @return string
      */
-	public function css($href){
-		return '<link media="all" type="text/css" rel="stylesheet" href="'.$this->url($href).'">';
-	}
+    public function css($href){
+        return '<link media="all" type="text/css" rel="stylesheet" href="'.$this->url($href).'">';
+    }
 
     /**
      * Return script link for $href
@@ -154,9 +153,9 @@ class Themes{
      * @param  string $href
      * @return string
      */
-	public function js($href){
-		return '<script src="'.$this->url($href).'"></script>';
-	}
+    public function js($href){
+        return '<script src="'.$this->url($href).'"></script>';
+    }
 
     /**
      * Return img tag
@@ -166,7 +165,7 @@ class Themes{
      * @param  string $Class
      * @return string
      */
-	public function img($src, $alt='', $Class=''){
-		return '<img src="'.$this->url($src).'" alt="'.$alt.'" class="'.$Class.'">';
-	}
+    public function img($src, $alt='', $Class=''){
+        return '<img src="'.$this->url($src).'" alt="'.$alt.'" class="'.$Class.'">';
+    }
 }
